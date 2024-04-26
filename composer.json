@@ -1,6 +1,6 @@
 {
-    "name": "maxsky/esign-client-cn",
-    "description": "ESign Client CN",
+    "name": "maxsky/cn-esign-client",
+    "description": "CN ESign PHP Client",
     "type": "library",
     "license": "MIT",
     "authors": [
