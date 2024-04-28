@@ -44,12 +44,12 @@ $response = ESignOpenAPI::signFlow()->queryOrganizationFlowList(1, 10, [
     'signFlowStartTimeTo' => $to
 ]);
 
-/** @var StreamInterface **/
+/** @var StreamInterface */
 $response->getBody(); // return original response 
 
-/** @var array **/
+/** @var array */
 $response->getJson(); // return array
 
-/** @var array **/
+/** @var array */
 $response->getData(); // return 'data' field content of Json array
 ```
