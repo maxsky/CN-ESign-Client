@@ -6,7 +6,7 @@ E签宝 PHP 客户端
 
 PHP: `^7.2 || ^8.0`
 
-PECL: `curl && json` 
+PECL: `curl && json`
 
 ## 安装
 
@@ -16,22 +16,24 @@ composer require maxsky/cn-esign-client
 
 ## 使用
 
-### 初始化配置
+### 1. 初始化配置
 
 ```php
 $config = new \MaxSky\ESign\Config\ESignConfig();
 
 $config->appId = 'test';
 $config->appSecret = 'test';
+
+$config->debug = true; // default false
 ```
 
-### 应用配置
+### 2. 应用配置
 
 ```php
 \MaxSky\ESign\ESignOpenAPI::setConfig($config);
 ```
 
-### 调用服务
+### 3. 调用服务
 
 ```php
 $start = Carbon::createFromDate(2024, 3, 1)->startOfDay()->getTimestampMs();
@@ -42,5 +44,12 @@ $response = ESignOpenAPI::signFlow()->queryOrganizationFlowList(1, 10, [
     'signFlowStartTimeTo' => $to
 ]);
 
-var_dump($response);
+/** @var StreamInterface **/
+$response->getBody(); // return original response 
+
+/** @var array **/
+$response->getJson(); // return array
+
+/** @var array **/
+$response->getData(); // return 'data' field content of Json array
 ```

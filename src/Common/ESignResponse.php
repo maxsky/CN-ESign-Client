@@ -2,6 +2,8 @@
 
 namespace MaxSky\ESign\Common;
 
+use MaxSky\ESign\Contracts\ESignResponseInterface;
+use MaxSky\ESign\Exceptions\ESignResponseException;
 use Psr\Http\Message\StreamInterface;
 
 /**
@@ -13,17 +15,20 @@ use Psr\Http\Message\StreamInterface;
  * @modifier Max Sky
  * @date     2024/04/25 5:07
  */
-class ESignResponse {
+class ESignResponse implements ESignResponseInterface {
 
     private $status;
     private $body;
     private $json = [];
+    private $data = null;
     private $code;
     private $message;
 
     /**
      * @param int             $status
      * @param StreamInterface $body
+     *
+     * @throws ESignResponseException
      */
     public function __construct(int $status, StreamInterface $body) {
         $this->status = $status;
@@ -54,6 +59,13 @@ class ESignResponse {
     }
 
     /**
+     * @return array|null
+     */
+    public function getData(): ?array {
+        return $this->data;
+    }
+
+    /**
      * @return int
      */
     public function getCode(): int {
@@ -71,6 +83,7 @@ class ESignResponse {
      * @param StreamInterface $body
      *
      * @return void
+     * @throws ESignResponseException
      */
     private function setJsonData(StreamInterface $body) {
         $json = json_decode($body, true);
@@ -78,7 +91,13 @@ class ESignResponse {
         if (json_last_error() === JSON_ERROR_NONE) {
             $this->json = $json;
             $this->code = $json['code'] ?? -1;
-            $this->message = $json['message'] ?? '未知请求错误';
+            $this->message = $json['message'] ?? '未知错误';
+
+            if ($this->code) { // success: 0
+                throw new ESignResponseException($this->message, $this->code);
+            } else {
+                $this->data = $json['data'];
+            }
         }
     }
 }

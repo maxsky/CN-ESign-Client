@@ -27,7 +27,7 @@ class ESignUtilHelper {
     }
 
     /**
-     * 获取文件 Content-MD5
+     * 获取文件 MD5
      *
      * @param string $file_path
      *

@@ -5,6 +5,7 @@ namespace MaxSky\ESign\Common;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\RequestOptions;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * HTTP 请求配置工具类
@@ -33,10 +34,10 @@ class ESignHttpCfgHelper {
      * @param array             $headers
      * @param array|string|null $params
      *
-     * @return ESignResponse
+     * @return ResponseInterface
      * @throws GuzzleException
      */
-    public static function sendHttp(string $method, string $url, array $headers = [], $params = null): ESignResponse {
+    public static function sendHttp(string $method, string $url, array $headers = [], $params = null): ResponseInterface {
         $httpClient = new Client();
 
         if ($params && is_array($params)) {
@@ -53,9 +54,7 @@ class ESignHttpCfgHelper {
             $options[RequestOptions::BODY] = $params;
         }
 
-        $request = $httpClient->request($method, $url, $options);
-
-        return new ESignResponse($request->getStatusCode(), $request->getBody());
+        return $httpClient->request($method, $url, $options);
     }
 
     /**
@@ -66,10 +65,10 @@ class ESignHttpCfgHelper {
      * @param string $file_contents
      * @param string $content_type
      *
-     * @return ESignResponse
+     * @return ResponseInterface
      * @throws GuzzleException
      */
-    public static function uploadFile(string $url, string $content_md5, string $file_contents, string $content_type): ESignResponse {
+    public static function uploadFile(string $url, string $content_md5, string $file_contents, string $content_type) {
         $httpClient = new Client([
             'defaults' => [
                 'config' => [
@@ -91,9 +90,7 @@ class ESignHttpCfgHelper {
             RequestOptions::BODY => $file_contents
         ]);
 
-        $request = $httpClient->put($url, $options);
-
-        return new ESignResponse($request->getStatusCode(), $request->getBody());
+        return $httpClient->put($url, $options);
     }
 
     /**

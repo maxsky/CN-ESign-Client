@@ -8,6 +8,7 @@ use MaxSky\ESign\Config\ESignConfig;
 use MaxSky\ESign\Constants\ContentType;
 use MaxSky\ESign\Constants\RequestHost;
 use MaxSky\ESign\Exceptions\ESignFileNotExistException;
+use MaxSky\ESign\Exceptions\ESignResponseException;
 
 /**
  * ESignHttp 请求类
@@ -30,6 +31,8 @@ class ESignHttpHelper {
 
     private static $debug = false;
 
+    private static $responseClass = ESignResponse::class;
+
     private function __construct(ESignConfig $config) {
         self::$host = $config->sandbox ? RequestHost::ESIGN_HOST_SIMULATION : RequestHost::ESIGN_HOST_FORMAL;
         self::$appId = $config->appId;
@@ -48,6 +51,10 @@ class ESignHttpHelper {
         ESignHttpCfgHelper::$httpProxyPort = $config->reqHttpProxyPort;
         ESignHttpCfgHelper::$httpProxyUsername = $config->reqHttpProxyUsername;
         ESignHttpCfgHelper::$httpProxyPassword = $config->reqHttpProxyPassword;
+
+        if ($config->customResponseClass && !class_exists($config->customResponseClass)) {
+            self::$responseClass = $config->customResponseClass;
+        }
     }
 
     /**
@@ -72,14 +79,20 @@ class ESignHttpHelper {
      * @param array             $headers
      *
      * @return ESignResponse
-     * @throws GuzzleException
+     * @throws ESignResponseException
      */
     public static function doCommHttp(string $uri, string $method, $params = null, array $headers = []): ESignResponse {
         if (!$headers && !($params['contentType'] ?? null)) {
             $headers = self::signAndBuildSignAndJsonHeader($params, $method, $uri);
         }
 
-        $response = ESignHttpCfgHelper::sendHttp($method, self::$host . $uri, $headers, $params);
+        try {
+            $response = ESignHttpCfgHelper::sendHttp($method, self::$host . $uri, $headers, $params);
+
+            $response = new self::$responseClass($response->getStatusCode(), $response->getBody());
+        } catch (GuzzleException $e) {
+            throw new ESignResponseException($e->getMessage(), $e->getCode());
+        }
 
         if (self::$debug) {
             ESignLogHelper::printMsg($response->getStatus());
@@ -98,14 +111,20 @@ class ESignHttpHelper {
      *
      * @return ESignResponse
      * @throws ESignFileNotExistException
-     * @throws GuzzleException
+     * @throws ESignResponseException
      */
     public static function uploadFileHttp(string $upload_url, string $file_path, string $content_type): ESignResponse {
         $fileContent = file_get_contents($file_path);
 
         $contentMd5 = ESignUtilHelper::getFileContentMd5($upload_url);
 
-        $response = ESignHttpCfgHelper::uploadFile($upload_url, $contentMd5, $fileContent, $content_type);
+        try {
+            $response = ESignHttpCfgHelper::uploadFile($upload_url, $contentMd5, $fileContent, $content_type);
+
+            $response = new self::$responseClass($response->getStatusCode(), $response->getBody());
+        } catch (GuzzleException $e) {
+            throw new ESignResponseException($e->getMessage(), $e->getCode());
+        }
 
         if (self::$debug) {
             ESignLogHelper::printMsg($response->getStatus());

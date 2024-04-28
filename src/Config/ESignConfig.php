@@ -9,6 +9,8 @@
 
 namespace MaxSky\ESign\Config;
 
+use MaxSky\ESign\Common\ESignResponse;
+
 class ESignConfig {
 
     public $appId;
@@ -27,4 +29,6 @@ class ESignConfig {
     public $reqHttpProxyPort;
     public $reqHttpProxyUsername;
     public $reqHttpProxyPassword;
+
+    public $customResponseClass = ESignResponse::class;
 }

@@ -6,7 +6,7 @@ use MaxSky\ESign\Exceptions\ESignCallbackException;
 use MaxSky\ESign\Modules\BaseModule;
 
 /**
- * 接收各类 E签宝 回调
+ * 各类 E签宝 回调
  *
  * @author    婉兮
  * @date      2022/09/02 9:51
@@ -17,7 +17,7 @@ use MaxSky\ESign\Modules\BaseModule;
 class Callback extends BaseModule {
 
     /**
-     * 签署回调
+     * 回调验证
      *
      * @param string $method
      * @param array  $server_headers
@@ -34,7 +34,7 @@ class Callback extends BaseModule {
 
         $sign = $server_headers['HTTP_X_TSIGN_OPEN_SIGNATURE'] ?? null;
 
-        // 校验签名 如果header里放入的值为X_TSIGN_OPEN_SIGNATURE，到header里会自动加上HTTP_，并且转化为大写，取值时如下
+        // 校验签名 如果 header 里放入的值为 X_TSIGN_OPEN_SIGNATURE，到 header 里会自动加上 HTTP_ 并转化为大写，取值时如下
         if (!$sign) {
             throw new ESignCallbackException('签名不能为空');
         }

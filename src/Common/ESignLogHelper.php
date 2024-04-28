@@ -5,14 +5,17 @@ namespace MaxSky\ESign\Common;
 /**
  * ESign 日志类
  *
- * @author  澄泓
- * @date    2022/08/18 15:10
+ * @author   澄泓
+ * @date     2022/08/18 15:10
+ *
+ * @modifier Max Sky
+ * @date     2024/04/28 4:44
  */
 class ESignLogHelper {
 
     /**
      * @param array|object|string $msg
-     * @param string       $location Log location
+     * @param string              $location Log location
      *
      * @return void
      */

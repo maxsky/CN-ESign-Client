@@ -2,9 +2,10 @@
 
 namespace MaxSky\ESign\Modules\Organization;
 
-use GuzzleHttp\Exception\GuzzleException;
 use MaxSky\ESign\Common\ESignHttpHelper;
+use MaxSky\ESign\Common\ESignResponse;
 use MaxSky\ESign\Exceptions\ESignRequestParameterException;
+use MaxSky\ESign\Exceptions\ESignResponseException;
 use MaxSky\ESign\Modules\BaseModule;
 use MaxSky\ESign\Validation\OrganizationMemberValidation;
 
@@ -23,6 +24,7 @@ class Member extends BaseModule {
 
     const ESIGN_API_ORG_ADMIN = '/v3/organizations/%s/administrators';
     const ESIGN_API_ORG_MEMBER_LIST = '/v3/organizations/%s/member-list';
+    const ESIGN_API_ORG_MEMBER_PERSON = '/v3/organizations/member';
     const ESIGN_API_ORG_MEMBER = '/v3/organizations/%s/members';
 
     /**
@@ -33,13 +35,13 @@ class Member extends BaseModule {
      *
      * @param string $org_id
      *
-     * @return array
-     * @throws GuzzleException
+     * @return ESignResponse
+     * @throws ESignResponseException
      */
-    public function queryAdmin(string $org_id): array {
+    public function queryAdmin(string $org_id): ESignResponse {
         $uri = sprintf(self::ESIGN_API_ORG_ADMIN, $org_id);
 
-        return ESignHttpHelper::doCommHttp($uri, 'GET')->getJson();
+        return ESignHttpHelper::doCommHttp($uri, 'GET');
     }
 
     /**
@@ -52,16 +54,36 @@ class Member extends BaseModule {
      * @param int    $page_num
      * @param int    $page_size
      *
-     * @return array
-     * @throws GuzzleException
+     * @return ESignResponse
+     * @throws ESignResponseException
      */
-    public function queryMemberList(string $org_id, int $page_num = 1, int $page_size = 100): array {
+    public function queryMemberList(string $org_id,
+                                    int    $page_num = 1, int $page_size = 100): ESignResponse {
         $uri = sprintf(self::ESIGN_API_ORG_MEMBER_LIST, $org_id);
 
         return ESignHttpHelper::doCommHttp($uri, 'GET', [
             'pageNum' => $page_num,
             'pageSize' => $page_size
-        ])->getJson();
+        ]);
+    }
+
+    /**
+     * 查询个人用户是否为企业成员
+     * /v3/organizations/member
+     *
+     * @url https://open.esign.cn/doc/opendoc/employee/smmg6dwz7fyys2wl
+     *
+     * @param string $org_id
+     * @param string $psn_id
+     *
+     * @return ESignResponse
+     * @throws ESignResponseException
+     */
+    public function queryPerson(string $org_id, string $psn_id): ESignResponse {
+        return ESignHttpHelper::doCommHttp(self::ESIGN_API_ORG_MEMBER_PERSON, 'GET', [
+            'orgId' => $org_id,
+            'psnId' => $psn_id
+        ]);
     }
 
     /**
@@ -73,18 +95,18 @@ class Member extends BaseModule {
      * @param string $org_id
      * @param array  $members
      *
-     * @return array
+     * @return ESignResponse
      * @throws ESignRequestParameterException
-     * @throws GuzzleException
+     * @throws ESignResponseException
      */
-    public function add(string $org_id, array $members): array {
+    public function addMember(string $org_id, array $members): ESignResponse {
         $uri = sprintf(self::ESIGN_API_ORG_MEMBER, $org_id);
 
         $this->validateAddMember($members);
 
         $params = ['members' => $members];
 
-        return ESignHttpHelper::doCommHttp($uri, 'POST', $params)->getJson();
+        return ESignHttpHelper::doCommHttp($uri, 'POST', $params);
     }
 
     /**
@@ -96,16 +118,16 @@ class Member extends BaseModule {
      * @param string $org_id
      * @param array  $member_psn_ids
      *
-     * @return array
-     * @throws GuzzleException
+     * @return ESignResponse
+     * @throws ESignResponseException
      */
-    public function delete(string $org_id, array $member_psn_ids): array {
+    public function deleteMember(string $org_id, array $member_psn_ids): ESignResponse {
         $uri = sprintf(self::ESIGN_API_ORG_MEMBER, $org_id);
 
         $params = [
             'memberPsnIds' => implode(',', $member_psn_ids)
         ];
 
-        return ESignHttpHelper::doCommHttp($uri, 'DELETE', $params)->getJson();
+        return ESignHttpHelper::doCommHttp($uri, 'DELETE', $params);
     }
 }

@@ -2,14 +2,15 @@
 
 namespace MaxSky\ESign\Modules\Sign;
 
-use GuzzleHttp\Exception\GuzzleException;
 use MaxSky\ESign\Common\ESignHttpHelper;
+use MaxSky\ESign\Common\ESignResponse;
 use MaxSky\ESign\Exceptions\ESignRequestParameterException;
+use MaxSky\ESign\Exceptions\ESignResponseException;
 use MaxSky\ESign\Modules\BaseModule;
 use MaxSky\ESign\Validation\SignFlowValidation;
 
 /**
- * 合同签署服务API
+ * 合同签署服务 API
  *
  * @author    婉兮
  * @date      2022/09/02 9:51
@@ -34,30 +35,24 @@ class SignFlow extends BaseModule {
 
     const ESIGN_API_FLOW_DETAIL = '/v3/sign-flow/%s/detail';
     const ESIGN_API_FLOW_LIST = '/v3/sign-flow/sign-flow-list'; // query flow only create from API
-    const ESIGN_API_ORG_SIGN_FLOW_LIST = '/v3/organizations/sign-flow-list';
+    const ESIGN_API_FLOW_ORG_LIST = '/v3/organizations/sign-flow-list';
 
-    const ESIGN_API_SIGN_FIELD_ADD = '/v3/sign-flow/%s/signers/sign-fields';
-    const ESIGN_API_SIGN_FIELD_DELETE = '/v3/sign-flow/%s/signers/sign-fields';
-
-    const ESIGN_API_CONTRACT_VERIFY = '/v3/files/%s/verify';
-    const ESIGN_API_ANTCHAIN_FILE_INFO = '/v3/antchain-file-info';
-    const ESIGN_API_ANTCHAIN_VERIFY = '/v3/antchain-file-info/verify';
-
-    const ESIGN_API_RESCISSION_URL = '/v3/sign-flow/%s/rescission-url';
+    const ESIGN_API_FLOW_RESCISSION_URL = '/v3/sign-flow/%s/rescission-url';
+    const ESIGN_API_FLOW_RESCISSION_INITIATE = '/v3/sign-flow/%s/initiate-rescission';
 
     /**
      * 基于文件发起签署
      *
      * @param array $params
      *
-     * @return array
+     * @return ESignResponse
      * @throws ESignRequestParameterException
-     * @throws GuzzleException
+     * @throws ESignResponseException
      */
-    public function createByFile(array $params): array {
+    public function createByFile(array $params): ESignResponse {
         $this->validateCreateByFile($params);
 
-        return ESignHttpHelper::doCommHttp(self::ESIGN_API_CREATE_BY_FILE, 'POST', $params)->getJson();
+        return ESignHttpHelper::doCommHttp(self::ESIGN_API_CREATE_BY_FILE, 'POST', $params);
     }
 
     /**
@@ -68,17 +63,18 @@ class SignFlow extends BaseModule {
      * @param array  $operator
      * @param array  $options
      *
-     * @return array
-     * @throws GuzzleException
+     * @return ESignResponse
+     * @throws ESignResponseException
      */
-    public function getSignUrl(string $flow_id, array $operator, array $options = []): array {
+    public function getSignUrl(string $flow_id,
+                               array  $operator, array $options = []): ESignResponse {
         $params = array_merge([
             'operator' => $operator
         ], $options);
 
         $uri = sprintf(self::ESIGN_API_SIGN_URL, $flow_id);
 
-        return ESignHttpHelper::doCommHttp($uri, 'POST', $params)->getJson();
+        return ESignHttpHelper::doCommHttp($uri, 'POST', $params);
     }
 
     /**
@@ -89,11 +85,12 @@ class SignFlow extends BaseModule {
      * @param array  $flow_ids
      * @param array  $options
      *
-     * @return array
+     * @return ESignResponse
      * @throws ESignRequestParameterException
-     * @throws GuzzleException
+     * @throws ESignResponseException
      */
-    public function getBatchSignUrl(string $operator_id, array $flow_ids, array $options = []): array {
+    public function getBatchSignUrl(string $operator_id,
+                                    array  $flow_ids, array $options = []): ESignResponse {
         $this->validateBatchSignUrl($flow_ids);
 
         $params = array_merge([
@@ -101,101 +98,7 @@ class SignFlow extends BaseModule {
             'signFlowIds' => $flow_ids
         ], $options);
 
-        return ESignHttpHelper::doCommHttp(self::ESIGN_API_BATCH_SIGN_URL, 'POST', $params)->getJson();
-    }
-
-    /**
-     * 下载已签署文件及附属材料
-     * /v3/sign-flow/{signFlowId}/file-download-url
-     *
-     * @param string $flow_id
-     *
-     * @return array
-     * @throws GuzzleException
-     */
-    public function downloadFile(string $flow_id): array {
-        $uri = sprintf(self::ESIGN_API_FILE_DOWNLOAD_URL, $flow_id);
-
-        return ESignHttpHelper::doCommHttp($uri, 'GET')->getJson();
-    }
-
-    /**
-     * @param string $flow_id
-     *
-     * @return array
-     * @throws GuzzleException
-     */
-    public function flowStart(string $flow_id): array {
-        $uri = sprintf(self::ESIGN_API_FLOW_START, $flow_id);
-
-        return ESignHttpHelper::doCommHttp($uri, 'POST')->getJson();
-    }
-
-    /**
-     * 完结签署流程
-     * /v3/sign-flow/{signFlowId}/finish
-     *
-     * @param string $flow_id
-     *
-     * @return array
-     * @throws GuzzleException
-     */
-    public function flowFinish(string $flow_id): array {
-        $uri = sprintf(self::ESIGN_API_FLOW_FINISH, $flow_id);
-
-        return ESignHttpHelper::doCommHttp($uri, 'POST')->getJson();
-    }
-
-    /**
-     * 撤销签署流程
-     * /v3/sign-flow/{signFlowId}/revoke
-     *
-     * @param string $flow_id
-     * @param array  $options
-     *
-     * @return array
-     * @throws GuzzleException
-     */
-    public function flowRevoke(string $flow_id, array $options = []): array {
-        $uri = sprintf(self::ESIGN_API_FLOW_REVOKE, $flow_id);
-
-        return ESignHttpHelper::doCommHttp($uri, 'POST', $options)->getJson();
-    }
-
-    /**
-     * 延长签署截止时间
-     * /v3/sign-flow/{signFlowId}/delay
-     *
-     * @url https://open.esign.cn/doc/opendoc/pdf-sign3/idv0fv
-     *
-     * @param string $flow_id
-     * @param int    $sign_flow_expire_time
-     *
-     * @return array
-     * @throws GuzzleException
-     */
-    public function flowDelay(string $flow_id, int $sign_flow_expire_time): array {
-        $uri = sprintf(self::ESIGN_API_FLOW_DELAY, $flow_id);
-
-        return ESignHttpHelper::doCommHttp($uri, 'POST', [
-            'signFlowExpireTime' => $sign_flow_expire_time
-        ])->getJson();
-    }
-
-    /**
-     * 催签流程中签署人
-     * /v3/sign-flow/{signFlowId}/urge
-     *
-     * @param string $flow_id
-     * @param array  $options
-     *
-     * @return array
-     * @throws GuzzleException
-     */
-    public function flowUrge(string $flow_id, array $options = []): array {
-        $uri = sprintf(self::ESIGN_API_FLOW_URGE, $flow_id);
-
-        return ESignHttpHelper::doCommHttp($uri, 'POST', $options)->getJson();
+        return ESignHttpHelper::doCommHttp(self::ESIGN_API_BATCH_SIGN_URL, 'POST', $params);
     }
 
     /**
@@ -208,47 +111,67 @@ class SignFlow extends BaseModule {
      * @param array  $rescission_initiator
      * @param array  $options
      *
-     * @return array
-     * @throws GuzzleException
+     * @return ESignResponse
+     * @throws ESignResponseException
      */
-    public function flowRescission(string $flow_id, array $rescission_initiator, array $options = []): array {
-        $uri = sprintf(self::ESIGN_API_RESCISSION_URL, $flow_id);
+    public function getFlowRescissionUrl(string $flow_id,
+                                         array  $rescission_initiator, array $options = []): ESignResponse {
+        $uri = sprintf(self::ESIGN_API_FLOW_RESCISSION_URL, $flow_id);
 
         $params = array_merge([
             'rescissionInitiator' => $rescission_initiator
         ], $options);
 
-        return ESignHttpHelper::doCommHttp($uri, 'POST', $params)->getJson();
+        return ESignHttpHelper::doCommHttp($uri, 'POST', $params);
+    }
+
+    /**
+     * 下载已签署文件及附属材料
+     * /v3/sign-flow/{signFlowId}/file-download-url
+     *
+     * @param string $flow_id
+     *
+     * @return ESignResponse
+     * @throws ESignResponseException
+     */
+    public function downloadFile(string $flow_id): ESignResponse {
+        $uri = sprintf(self::ESIGN_API_FILE_DOWNLOAD_URL, $flow_id);
+
+        return ESignHttpHelper::doCommHttp($uri, 'GET');
     }
 
     /**
      * 查询签署流程详情
      * /v3/sign-flow/{signFlowId}/detail
      *
+     * @url https://open.esign.cn/doc/opendoc/pdf-sign3/xxk4q6
+     *
      * @param string $flow_id
      *
-     * @return array
-     * @throws GuzzleException
+     * @return ESignResponse
+     * @throws ESignResponseException
      */
-    public function queryFlowDetail(string $flow_id): array {
+    public function queryFlowDetail(string $flow_id): ESignResponse {
         $uri = sprintf(self::ESIGN_API_FLOW_DETAIL, $flow_id);
 
-        return ESignHttpHelper::doCommHttp($uri, 'POST')->getJson();
+        return ESignHttpHelper::doCommHttp($uri, 'GET');
     }
 
     /**
      * 查询签署流程列表
      * /v3/sign-flow/sign-flow-list
      *
+     * @url https://open.esign.cn/doc/opendoc/pdf-sign3/kq4b2e
+     *
      * @param int   $page_num
      * @param int   $page_size
      * @param array $options
      *
-     * @return array
+     * @return ESignResponse
      * @throws ESignRequestParameterException
-     * @throws GuzzleException
+     * @throws ESignResponseException
      */
-    public function queryFlowList(int $page_num, int $page_size, array $options = []): array {
+    public function queryFlowList(int $page_num, int $page_size, array $options = []): ESignResponse {
         $params = array_merge([
             'pageNum' => $page_num,
             'pageSize' => $page_size
@@ -256,22 +179,24 @@ class SignFlow extends BaseModule {
 
         $this->validateQueryFlowList($params);
 
-        return ESignHttpHelper::doCommHttp(self::ESIGN_API_FLOW_LIST, 'POST', $params)->getJson();
+        return ESignHttpHelper::doCommHttp(self::ESIGN_API_FLOW_LIST, 'POST', $params);
     }
 
     /**
      * 查询集成方企业名下发起的签署流程列表
      * /v3/organizations/sign-flow-list
      *
+     * @url https://open.esign.cn/doc/opendoc/pdf-sign3/uhma1i
+     *
      * @param int   $page_num
      * @param int   $page_size
      * @param array $options
      *
-     * @return array
+     * @return ESignResponse
      * @throws ESignRequestParameterException
-     * @throws GuzzleException
+     * @throws ESignResponseException
      */
-    public function queryOrganizationFlowList(int $page_num, int $page_size, array $options = []): array {
+    public function queryOrganizationFlowList(int $page_num, int $page_size, array $options = []): ESignResponse {
         $params = array_merge([
             'pageNum' => $page_num,
             'pageSize' => $page_size
@@ -279,104 +204,126 @@ class SignFlow extends BaseModule {
 
         $this->validateQueryFlowList($params);
 
-        return ESignHttpHelper::doCommHttp(self::ESIGN_API_ORG_SIGN_FLOW_LIST, 'POST', $params)->getJson();
+        return ESignHttpHelper::doCommHttp(self::ESIGN_API_FLOW_ORG_LIST, 'POST', $params);
     }
 
     /**
-     * 追加签署区
-     * /v3/sign-flow/{signFlowId}/signers/sign-fields
+     * 开启签署流程
+     * /v3/sign-flow/{signFlowId}/start
+     *
+     * @url https://open.esign.cn/doc/opendoc/pdf-sign3/pu4xsx
      *
      * @param string $flow_id
-     * @param array  $signers
+     *
+     * @return ESignResponse
+     * @throws ESignResponseException
+     */
+    public function flowStart(string $flow_id): ESignResponse {
+        $uri = sprintf(self::ESIGN_API_FLOW_START, $flow_id);
+
+        return ESignHttpHelper::doCommHttp($uri, 'POST');
+    }
+
+    /**
+     * 完结签署流程
+     * /v3/sign-flow/{signFlowId}/finish
+     *
+     * @url https://open.esign.cn/doc/opendoc/pdf-sign3/ynwqsm
+     *
+     * @param string $flow_id
+     *
+     * @return ESignResponse
+     * @throws ESignResponseException
+     */
+    public function flowFinish(string $flow_id): ESignResponse {
+        $uri = sprintf(self::ESIGN_API_FLOW_FINISH, $flow_id);
+
+        return ESignHttpHelper::doCommHttp($uri, 'POST');
+    }
+
+    /**
+     * 撤销签署流程
+     * /v3/sign-flow/{signFlowId}/revoke
+     *
+     * @url https://open.esign.cn/doc/opendoc/pdf-sign3/klbicu
+     *
+     * @param string $flow_id
      * @param array  $options
      *
-     * @return array
-     * @throws ESignRequestParameterException
-     * @throws GuzzleException
+     * @return ESignResponse
+     * @throws ESignResponseException
      */
-    public function signFieldsAdd(string $flow_id, array $signers, array $options = []): array {
-        $this->validateAddSignFields($signers);
+    public function flowRevoke(string $flow_id, array $options = []): ESignResponse {
+        $uri = sprintf(self::ESIGN_API_FLOW_REVOKE, $flow_id);
 
-        $uri = sprintf(self::ESIGN_API_SIGN_FIELD_ADD, $flow_id);
+        return ESignHttpHelper::doCommHttp($uri, 'POST', $options);
+    }
+
+    /**
+     * 延长签署截止时间
+     * /v3/sign-flow/{signFlowId}/delay
+     *
+     * @url https://open.esign.cn/doc/opendoc/pdf-sign3/idv0fv
+     *
+     * @param string $flow_id
+     * @param int    $sign_flow_expire_time
+     *
+     * @return ESignResponse
+     * @throws ESignResponseException
+     */
+    public function flowDelay(string $flow_id, int $sign_flow_expire_time): ESignResponse {
+        $uri = sprintf(self::ESIGN_API_FLOW_DELAY, $flow_id);
+
+        return ESignHttpHelper::doCommHttp($uri, 'POST', [
+            'signFlowExpireTime' => $sign_flow_expire_time
+        ]);
+    }
+
+    /**
+     * 催签流程中签署人
+     * /v3/sign-flow/{signFlowId}/urge
+     *
+     * @url https://open.esign.cn/doc/opendoc/pdf-sign3/yws940
+     *
+     * @param string $flow_id
+     * @param array  $options
+     *
+     * @return ESignResponse
+     * @throws ESignResponseException
+     */
+    public function flowUrge(string $flow_id, array $options = []): ESignResponse {
+        $uri = sprintf(self::ESIGN_API_FLOW_URGE, $flow_id);
+
+        return ESignHttpHelper::doCommHttp($uri, 'POST', $options);
+    }
+
+    /**
+     * 发起合同解约
+     * /v3/sign-flow/{signFlowId}/initiate-rescission
+     *
+     * @url https://open.esign.cn/doc/opendoc/pdf-sign3/rcgt2karhmz75k1i
+     *
+     * @param string $flow_id
+     * @param array  $rescind_file_list
+     * @param string $rescind_reason
+     * @param array  $rescissionInitiator
+     * @param array  $options
+     *
+     * @return ESignResponse
+     * @throws ESignResponseException
+     */
+    public function flowRescission(string $flow_id,
+                                   array  $rescind_file_list,
+                                   string $rescind_reason,
+                                   array  $rescissionInitiator, array $options = []): ESignResponse {
+        $uri = sprintf(self::ESIGN_API_FLOW_RESCISSION_INITIATE, $flow_id);
 
         $params = array_merge([
-            'signers' => $signers
+            'rescindFileList' => $rescind_file_list,
+            'rescindReason' => $rescind_reason,
+            'rescissionInitiator' => $rescissionInitiator
         ], $options);
 
-        return ESignHttpHelper::doCommHttp($uri, 'POST', $params)->getJson();
-    }
-
-    /**
-     * 删除签署区
-     * /v3/sign-flow/{signFlowId}/signers/sign-fields?signFieldIds=xxx1,xxx2
-     *
-     * @url https://open.esign.cn/doc/opendoc/pdf-sign3/bd27ph
-     *
-     * @param string $flow_id
-     * @param array  $field_ids
-     *
-     * @return array
-     * @throws GuzzleException
-     */
-    public function signFieldsDelete(string $flow_id, array $field_ids): array {
-        $uri = sprintf(self::ESIGN_API_SIGN_FIELD_DELETE, $flow_id);
-
-        return ESignHttpHelper::doCommHttp($uri, 'DELETE', [
-            'signFieldIds' => $field_ids
-        ])->getJson();
-    }
-
-    /**
-     * 核验合同文件签名有效性
-     * /v3/files/{fileId}/verify
-     *
-     * @url https://open.esign.cn/doc/opendoc/pdf-sign3/yekrnc
-     *
-     * @param string $file_id
-     * @param array  $options
-     *
-     * @return array
-     * @throws GuzzleException
-     */
-    public function verifySignature(string $file_id, array $options = []): array {
-        $uri = sprintf(self::ESIGN_API_CONTRACT_VERIFY, $file_id);
-
-        return ESignHttpHelper::doCommHttp($uri, 'POST', $options)->getJson();
-    }
-
-    /**
-     * 获取区块链存证信息
-     * /v3/antchain-file-info
-     *
-     * @url https://open.esign.cn/doc/opendoc/pdf-sign3/ugtag2
-     *
-     * @param string $flow_id
-     *
-     * @return array
-     * @throws GuzzleException
-     */
-    public function queryAntchainFileInfo(string $flow_id): array {
-        return ESignHttpHelper::doCommHttp(self::ESIGN_API_ANTCHAIN_FILE_INFO, 'POST', [
-            'signFlowId' => $flow_id
-        ])->getJson();
-    }
-
-    /**
-     * 核验区块链存证文件
-     * /v3/antchain-file-info/verify
-     *
-     * @url https://open.esign.cn/doc/opendoc/pdf-sign3/benz09
-     *
-     * @param string $file_hash
-     * @param string $ant_tx_hash
-     *
-     * @return array
-     * @throws GuzzleException
-     */
-    public function verifyAntchainFileInfo(string $file_hash, string $ant_tx_hash): array {
-        return ESignHttpHelper::doCommHttp(self::ESIGN_API_ANTCHAIN_VERIFY, 'POST', [
-            'fileHash' => $file_hash,
-            'antTxHash' => $ant_tx_hash
-        ])->getJson();
+        return ESignHttpHelper::doCommHttp($uri, 'POST', $params);
     }
 }

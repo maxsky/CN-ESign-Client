@@ -2,23 +2,27 @@
 
 namespace MaxSky\ESign\Modules\FileAndTemplate;
 
-use GuzzleHttp\Exception\GuzzleException;
 use MaxSky\ESign\Common\ESignHttpHelper;
+use MaxSky\ESign\Common\ESignResponse;
+use MaxSky\ESign\Exceptions\ESignResponseException;
 use MaxSky\ESign\Modules\BaseModule;
 
 /**
  * 模板服务 API
  *
- * @author  陌上
- * @date    2022/09/02 9:51
+ * @author   陌上
+ * @date     2022/09/02 9:51
+ *
+ * @modifier Max Sky
+ * @date     2024/04/26 5:12
  */
 class Template extends BaseModule {
 
     const ESIGN_API_CREATE_BY_TEMPLATE = '/v3/files/create-by-doc-template';
-    const ESIGN_API_TEMPLATE_COMPONENT = '/v3/doc-templates/%s';
     const ESIGN_API_TEMPLATE_CREATE_URL = '/v3/doc-templates/doc-template-create-url';
     const ESIGN_API_TEMPLATE_LIST = '/v3/doc-templates';
     const ESIGN_API_TEMPLATE_FILE = '/v3/files/%s';
+    const ESIGN_API_TEMPLATE_COMPONENT = '/v3/doc-templates/%s';
 
     /**
      * 填写模板生成文件
@@ -31,35 +35,18 @@ class Template extends BaseModule {
      * @param array  $components
      * @param array  $options
      *
-     * @return array
-     * @throws GuzzleException
+     * @return ESignResponse
+     * @throws ESignResponseException
      */
     public function createByDocTemplate(string $doc_template_id,
-                                        string $filename, array $components, array $options = []): array {
+                                        string $filename, array $components, array $options = []): ESignResponse {
         $params = array_merge([
             'docTemplateId' => $doc_template_id,
             'fileName' => $filename,
             'components' => $components
         ], $options);
 
-        return ESignHttpHelper::doCommHttp(self::ESIGN_API_CREATE_BY_TEMPLATE, 'POST', $params)->getJson();
-    }
-
-    /**
-     * 查询合同模板中控件详情
-     * /v3/doc-templates/{docTemplateId}
-     *
-     * @url https://open.esign.cn/doc/opendoc/pdf-sign3/aoq509
-     *
-     * @param string $doc_template_id
-     *
-     * @return array
-     * @throws GuzzleException
-     */
-    public function getComponents(string $doc_template_id): array {
-        $uri = sprintf(self::ESIGN_API_TEMPLATE_COMPONENT, $doc_template_id);
-
-        return ESignHttpHelper::doCommHttp($uri, 'GET')->getJson();
+        return ESignHttpHelper::doCommHttp(self::ESIGN_API_CREATE_BY_TEMPLATE, 'POST', $params);
     }
 
     /**
@@ -73,18 +60,18 @@ class Template extends BaseModule {
      * @param int    $doc_template_type
      * @param array  $options
      *
-     * @return array
-     * @throws GuzzleException
+     * @return ESignResponse
+     * @throws ESignResponseException
      */
     public function getCreateUrl(string $doc_template_name,
-                                 string $file_id, int $doc_template_type = 0, array $options = []): array {
+                                 string $file_id, int $doc_template_type = 0, array $options = []): ESignResponse {
         $params = array_merge([
             'docTemplateName' => $doc_template_name,
             'docTemplateType' => $doc_template_type,
             'fileId' => $file_id
         ], $options);
 
-        return ESignHttpHelper::doCommHttp(self::ESIGN_API_TEMPLATE_CREATE_URL, 'POST', $params)->getJson();
+        return ESignHttpHelper::doCommHttp(self::ESIGN_API_TEMPLATE_CREATE_URL, 'POST', $params);
     }
 
     /**
@@ -96,14 +83,14 @@ class Template extends BaseModule {
      * @param int $page_num
      * @param int $page_size
      *
-     * @return array
-     * @throws GuzzleException
+     * @return ESignResponse
+     * @throws ESignResponseException
      */
-    public function getTemplateList(int $page_num = 1, int $page_size = 20): array {
+    public function queryTemplateList(int $page_num = 1, int $page_size = 20): ESignResponse {
         return ESignHttpHelper::doCommHttp(self::ESIGN_API_TEMPLATE_LIST, 'GET', [
             'pageNum' => $page_num,
             'pageSize' => $page_size
-        ])->getJson();
+        ]);
     }
 
     /**
@@ -115,12 +102,29 @@ class Template extends BaseModule {
      * @param string $file_id
      * @param array  $options
      *
-     * @return array
-     * @throws GuzzleException
+     * @return ESignResponse
+     * @throws ESignResponseException
      */
-    public function getTemplateFile(string $file_id, array $options = []): array {
+    public function queryTemplateFile(string $file_id, array $options = []): ESignResponse {
         $uri = sprintf(self::ESIGN_API_TEMPLATE_FILE, $file_id);
 
-        return ESignHttpHelper::doCommHttp($uri, 'GET', $options)->getJson();
+        return ESignHttpHelper::doCommHttp($uri, 'GET', $options);
+    }
+
+    /**
+     * 查询合同模板中控件详情
+     * /v3/doc-templates/{docTemplateId}
+     *
+     * @url https://open.esign.cn/doc/opendoc/pdf-sign3/aoq509
+     *
+     * @param string $doc_template_id
+     *
+     * @return ESignResponse
+     * @throws ESignResponseException
+     */
+    public function queryComponents(string $doc_template_id): ESignResponse {
+        $uri = sprintf(self::ESIGN_API_TEMPLATE_COMPONENT, $doc_template_id);
+
+        return ESignHttpHelper::doCommHttp($uri, 'GET');
     }
 }

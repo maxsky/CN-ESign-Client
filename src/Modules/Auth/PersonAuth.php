@@ -2,14 +2,15 @@
 
 namespace MaxSky\ESign\Modules\Auth;
 
-use GuzzleHttp\Exception\GuzzleException;
 use MaxSky\ESign\Common\ESignHttpHelper;
+use MaxSky\ESign\Common\ESignResponse;
 use MaxSky\ESign\Exceptions\ESignRequestParameterException;
+use MaxSky\ESign\Exceptions\ESignResponseException;
 use MaxSky\ESign\Modules\BaseModule;
 use MaxSky\ESign\Validation\PersonAuthValidation;
 
 /**
- * 认证和授权服务 - 个人API
+ * 实名认证和授权服务 API（个人）
  *
  * @author    陌上
  * @date      2022/09/02 9:51
@@ -34,15 +35,15 @@ class PersonAuth extends BaseModule {
      * @param array $psn_auth_config
      * @param array $options
      *
-     * @return array
-     * @throws GuzzleException
+     * @return ESignResponse
+     * @throws ESignResponseException
      */
-    public function authUrl(array $psn_auth_config, array $options = []): array {
+    public function getAuthUrl(array $psn_auth_config, array $options = []): ESignResponse {
         $params = array_merge([
             'psnAuthConfig' => $psn_auth_config
         ], $options);
 
-        return ESignHttpHelper::doCommHttp(self::ESIGN_API_PSN_AUTH_URL, 'POST', $params)->getJson();
+        return ESignHttpHelper::doCommHttp(self::ESIGN_API_PSN_AUTH_URL, 'POST', $params);
     }
 
     /**
@@ -53,13 +54,13 @@ class PersonAuth extends BaseModule {
      *
      * @param string $psn_id
      *
-     * @return array
-     * @throws GuzzleException
+     * @return ESignResponse
+     * @throws ESignResponseException
      */
-    public function queryAuthInfo(string $psn_id): array {
+    public function queryAuthInfo(string $psn_id): ESignResponse {
         $uri = sprintf(self::ESIGN_API_PSN_AUTH_INFO, $psn_id);
 
-        return ESignHttpHelper::doCommHttp($uri, 'GET')->getJson();
+        return ESignHttpHelper::doCommHttp($uri, 'GET');
     }
 
     /**
@@ -73,13 +74,13 @@ class PersonAuth extends BaseModule {
      * @param string|null $psn_id_card_num
      * @param string|null $psn_id_card_type
      *
-     * @return array
+     * @return ESignResponse
      * @throws ESignRequestParameterException
-     * @throws GuzzleException
+     * @throws ESignResponseException
      */
     public function queryIdentityInfo(?string $psn_id = null,
                                       ?string $psn_account = null,
-                                      ?string $psn_id_card_num = null, ?string $psn_id_card_type = null): array {
+                                      ?string $psn_id_card_num = null, ?string $psn_id_card_type = null): ESignResponse {
 
         $this->validateQueryPsnIdentityInfo($psn_id, $psn_account, $psn_id_card_num, $psn_id_card_type);
 
@@ -88,6 +89,6 @@ class PersonAuth extends BaseModule {
             'psnAccount' => $psn_account,
             'psnIDCardNum' => $psn_id_card_num,
             'psnIDCardType' => $psn_id_card_type
-        ])->getJson();
+        ]);
     }
 }

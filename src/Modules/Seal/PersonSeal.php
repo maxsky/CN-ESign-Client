@@ -2,18 +2,22 @@
 
 namespace MaxSky\ESign\Modules\Seal;
 
-use GuzzleHttp\Exception\GuzzleException;
 use MaxSky\ESign\Common\ESignHttpHelper;
+use MaxSky\ESign\Common\ESignResponse;
 use MaxSky\ESign\Common\ESignUtilHelper;
 use MaxSky\ESign\Constants\ContentType;
 use MaxSky\ESign\Exceptions\ESignFileNotExistException;
+use MaxSky\ESign\Exceptions\ESignResponseException;
 use MaxSky\ESign\Modules\BaseModule;
 
 /**
  * 印章服务-个人API
  *
- * @author  天音
- * @date    2022/09/02 9:51
+ * @author   天音
+ * @date     2022/09/02 9:51
+ *
+ * @modifier Max Sky
+ * @date     2024/04/26 10:27
  */
 class PersonSeal extends BaseModule {
 
@@ -34,12 +38,12 @@ class PersonSeal extends BaseModule {
      * @param string $seal_size
      * @param array  $options
      *
-     * @return array
-     * @throws GuzzleException
+     * @return ESignResponse
+     * @throws ESignResponseException
      */
     public function createByTemplate(string $psn_id,
                                      string $seal_name,
-                                     string $seal_template_style, string $seal_size, array $options = []): array {
+                                     string $seal_template_style, string $seal_size, array $options = []): ESignResponse {
         $params = array_merge([
             'psnId' => $psn_id,
             'sealName' => $seal_name,
@@ -47,7 +51,7 @@ class PersonSeal extends BaseModule {
             'sealSize' => $seal_size
         ], $options);
 
-        return ESignHttpHelper::doCommHttp(self::ESIGN_API_PSN_SEAL_CREATE_BY_TEMPLATE, 'POST', $params)->getJson();
+        return ESignHttpHelper::doCommHttp(self::ESIGN_API_PSN_SEAL_CREATE_BY_TEMPLATE, 'POST', $params);
     }
 
     /**
@@ -63,12 +67,12 @@ class PersonSeal extends BaseModule {
      * @param string $seal_height
      * @param array  $options
      *
-     * @return array
-     * @throws GuzzleException
+     * @return ESignResponse
+     * @throws ESignResponseException
      */
     public function createByImage(string $psn_id,
                                   string $seal_image_file_key,
-                                  string $seal_name, string $seal_width, string $seal_height, array $options = []): array {
+                                  string $seal_name, string $seal_width, string $seal_height, array $options = []): ESignResponse {
         $params = array_merge([
             'psnId' => $psn_id,
             'sealImageFileKey' => $seal_image_file_key,
@@ -77,7 +81,7 @@ class PersonSeal extends BaseModule {
             'sealHeight' => $seal_height
         ], $options);
 
-        return ESignHttpHelper::doCommHttp(self::ESIGN_API_PSN_SEAL_CREATE_BY_IMAGE, 'POST', $params)->getJson();
+        return ESignHttpHelper::doCommHttp(self::ESIGN_API_PSN_SEAL_CREATE_BY_IMAGE, 'POST', $params);
     }
 
     /**
@@ -90,15 +94,15 @@ class PersonSeal extends BaseModule {
      * @param int    $page_num
      * @param int    $page_size
      *
-     * @return array
-     * @throws GuzzleException
+     * @return ESignResponse
+     * @throws ESignResponseException
      */
-    public function querySealList(string $psn_id, int $page_num = 1, int $page_size = 10): array {
+    public function querySealList(string $psn_id, int $page_num = 1, int $page_size = 10): ESignResponse {
         return ESignHttpHelper::doCommHttp(self::ESIGN_API_PSN_SEAL_LIST, 'GET', [
             'psnId' => $psn_id,
             'pageNum' => $page_num,
             'pageSize' => $page_size
-        ])->getJson();
+        ]);
     }
 
     /**
@@ -111,16 +115,16 @@ class PersonSeal extends BaseModule {
      * @param string $redirect_url
      * @param array  $options
      *
-     * @return array
-     * @throws GuzzleException
+     * @return ESignResponse
+     * @throws ESignResponseException
      */
-    public function getCreateUrl(string $psn_id, string $redirect_url, array $options = []): array {
+    public function getCreateUrl(string $psn_id, string $redirect_url, array $options = []): ESignResponse {
         $params = array_merge([
             'psnId' => $psn_id,
             'redirectUrl' => $redirect_url
         ], $options);
 
-        return ESignHttpHelper::doCommHttp(self::ESIGN_API_PSN_SEAL_CREATE_URL, 'POST', $params)->getJson();
+        return ESignHttpHelper::doCommHttp(self::ESIGN_API_PSN_SEAL_CREATE_URL, 'POST', $params);
     }
 
     /**
@@ -131,13 +135,13 @@ class PersonSeal extends BaseModule {
      *
      * @param string $psn_id
      *
-     * @return array
-     * @throws GuzzleException
+     * @return ESignResponse
+     * @throws ESignResponseException
      */
-    public function getManageUrl(string $psn_id): array {
+    public function getManageUrl(string $psn_id): ESignResponse {
         return ESignHttpHelper::doCommHttp(self::ESIGN_API_PSN_SEAL_MANAGE_URL, 'POST', [
             'psnId' => $psn_id
-        ])->getJson();
+        ]);
     }
 
     /**
@@ -151,7 +155,7 @@ class PersonSeal extends BaseModule {
      *
      * @return string|null
      * @throws ESignFileNotExistException
-     * @throws GuzzleException
+     * @throws ESignResponseException
      */
     public function uploadSealImage(string $image_path, string $filename): ?string {
         $params = [
@@ -164,10 +168,12 @@ class PersonSeal extends BaseModule {
         $response = ESignHttpHelper::doCommHttp(self::ESIGN_API_PSN_SEAL_UPLOAD_IMAGE, 'POST', $params);
 
         if (!$response->getCode()) {
-            $fileUploadUrl = $response->getJson()['data']['fileUploadUrl'] ?? null;
+            $responseData = $response->getData();
+
+            $fileUploadUrl = $responseData['fileUploadUrl'] ?? null;
 
             if ($fileUploadUrl) {
-                $fileKey = $response->getJson()['data']['fileKey'] ?? null;
+                $fileKey = $responseData['fileKey'] ?? null;
 
                 $result = ESignHttpHelper::uploadFileHttp($fileUploadUrl, $image_path, ContentType::STREAM)->getJson();
 
@@ -189,13 +195,13 @@ class PersonSeal extends BaseModule {
      * @param string $psn_id
      * @param string $seal_id
      *
-     * @return array
-     * @throws GuzzleException
+     * @return ESignResponse
+     * @throws ESignResponseException
      */
-    public function delete(string $psn_id, string $seal_id): array {
+    public function deleteSeal(string $psn_id, string $seal_id): ESignResponse {
         return ESignHttpHelper::doCommHttp(self::ESIGN_API_PSN_SEAL, 'DELETE', [
             'psnId' => $psn_id,
             'sealId' => $seal_id
-        ])->getJson();
+        ]);
     }
 }

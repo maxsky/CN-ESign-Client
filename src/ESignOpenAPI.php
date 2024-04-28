@@ -18,9 +18,13 @@ use MaxSky\ESign\Modules\FileAndTemplate\File;
 use MaxSky\ESign\Modules\FileAndTemplate\Template;
 use MaxSky\ESign\Modules\Order\Order;
 use MaxSky\ESign\Modules\Organization\Member;
+use MaxSky\ESign\Modules\Other\AuthFlow;
 use MaxSky\ESign\Modules\Seal\OrganizationSeal;
 use MaxSky\ESign\Modules\Seal\PersonSeal;
+use MaxSky\ESign\Modules\Sign\SignContract;
+use MaxSky\ESign\Modules\Sign\SignField;
 use MaxSky\ESign\Modules\Sign\SignFlow;
+use MaxSky\ESign\Modules\Sign\SignVerification;
 
 class ESignOpenAPI {
 
@@ -66,6 +70,13 @@ class ESignOpenAPI {
      */
     public static function personAuth(): PersonAuth {
         return new PersonAuth(self::$config);
+    }
+
+    /**
+     * @return AuthFlow
+     */
+    public static function authFlow(): AuthFlow {
+        return new AuthFlow(self::$config);
     }
 
     /**
@@ -118,9 +129,30 @@ class ESignOpenAPI {
     }
 
     /**
+     * @return SignContract
+     */
+    public static function signContract(): SignContract {
+        return new SignContract(self::$config);
+    }
+
+    /**
+     * @return SignField
+     */
+    public static function signField(): SignField {
+        return new SignField(self::$config);
+    }
+
+    /**
      * @return SignFlow
      */
     public static function signFlow(): SignFlow {
         return new SignFlow(self::$config);
+    }
+
+    /**
+     * @return SignVerification
+     */
+    public static function signVerification(): SignVerification {
+        return new SignVerification(self::$config);
     }
 }
