@@ -11,11 +11,11 @@ namespace ESignClientTests\Sign;
 
 use Carbon\Carbon;
 use ESignClientTests\TestCase;
-use GuzzleHttp\Exception\GuzzleException;
 use MaxSky\ESign\Config\ESignConfig;
 use MaxSky\ESign\ESignOpenAPI;
 use MaxSky\ESign\Exceptions\ESignConfigException;
 use MaxSky\ESign\Exceptions\ESignRequestParameterException;
+use MaxSky\ESign\Exceptions\ESignResponseException;
 
 class SignFlowTest extends TestCase {
 
@@ -35,7 +35,7 @@ class SignFlowTest extends TestCase {
      * @return void
      * @throws ESignConfigException
      * @throws ESignRequestParameterException
-     * @throws GuzzleException
+     * @throws ESignResponseException
      */
     public function testQueryOrganizationFlowList() {
         ESignOpenAPI::setConfig($this->config);
@@ -48,6 +48,6 @@ class SignFlowTest extends TestCase {
             'signFlowStartTimeTo' => $to
         ]);
 
-        $this->assertTrue(!$response['code']); // code will return 0 if success
+        $this->assertTrue(!$response->getCode()); // code will return 0 if success
     }
 }
