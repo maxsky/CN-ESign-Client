@@ -1,6 +1,8 @@
 # CN-ESign-Client
 
-E签宝 PHP 客户端
+E签宝 PHP 客户端，根据官方 **SaaSAPI_V3_Demo** 优化修改而来
+
+    改得跟官方一点都不像了，LOL :)
 
 ## 要求
 

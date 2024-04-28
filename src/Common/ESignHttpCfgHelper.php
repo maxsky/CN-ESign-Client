@@ -37,7 +37,8 @@ class ESignHttpCfgHelper {
      * @return ResponseInterface
      * @throws GuzzleException
      */
-    public static function sendHttp(string $method, string $url, array $headers = [], $params = null): ResponseInterface {
+    public static function sendHttp(string $method,
+                                    string $url, array $headers = [], $params = null): ResponseInterface {
         $httpClient = new Client();
 
         if ($params && is_array($params)) {
@@ -68,7 +69,9 @@ class ESignHttpCfgHelper {
      * @return ResponseInterface
      * @throws GuzzleException
      */
-    public static function uploadFile(string $url, string $content_md5, string $file_contents, string $content_type) {
+    public static function uploadFile(string $url,
+                                      string $content_md5,
+                                      string $file_contents, string $content_type): ResponseInterface {
         $httpClient = new Client([
             'defaults' => [
                 'config' => [

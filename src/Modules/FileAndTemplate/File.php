@@ -3,6 +3,7 @@
 namespace MaxSky\ESign\Modules\FileAndTemplate;
 
 use MaxSky\ESign\Common\ESignHttpHelper;
+use MaxSky\ESign\Common\ESignResponse;
 use MaxSky\ESign\Common\ESignUtilHelper;
 use MaxSky\ESign\Constants\ContentType;
 use MaxSky\ESign\Exceptions\ESignFileNotExistException;
@@ -59,15 +60,17 @@ class File extends BaseModule {
      * @param string $file_id
      * @param array  $options
      *
-     * @return array|null
+     * @return ESignResponse
      * @throws ESignResponseException
      */
-    public function queryUploadStatus(string $file_id, array $options = []): ?array {
+    public function queryUploadStatus(string $file_id, array $options = []): ESignResponse {
+        $uri = sprintf(self::ESIGN_API_FILE_STATUS, $file_id);
+
         $params = array_merge([
             'fileId' => $file_id
         ], $options);
 
-        return ESignHttpHelper::doCommHttp(sprintf(self::ESIGN_API_FILE_STATUS, $file_id), 'GET', $params)->getData();
+        return ESignHttpHelper::doCommHttp($uri, 'GET', $params);
     }
 
     /**

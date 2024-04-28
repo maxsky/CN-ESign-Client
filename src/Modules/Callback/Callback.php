@@ -27,7 +27,8 @@ class Callback extends BaseModule {
      * @return bool
      * @throws ESignCallbackException
      */
-    public function verify(string $method, array $server_headers, array $query, string $contents): bool {
+    public function verify(string $method,
+                           array  $server_headers, array $query, string $contents): bool {
         if (strtoupper($method) !== 'POST') {
             throw new ESignCallbackException('非法回调');
         }

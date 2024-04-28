@@ -81,7 +81,8 @@ class ESignHttpHelper {
      * @return ESignResponse
      * @throws ESignResponseException
      */
-    public static function doCommHttp(string $uri, string $method, $params = null, array $headers = []): ESignResponse {
+    public static function doCommHttp(string $uri,
+                                      string $method, $params = null, array $headers = []): ESignResponse {
         if (!$headers && !($params['contentType'] ?? null)) {
             $headers = self::signAndBuildSignAndJsonHeader($params, $method, $uri);
         }
@@ -113,7 +114,8 @@ class ESignHttpHelper {
      * @throws ESignFileNotExistException
      * @throws ESignResponseException
      */
-    public static function uploadFileHttp(string $upload_url, string $file_path, string $content_type): ESignResponse {
+    public static function uploadFileHttp(string $upload_url,
+                                          string $file_path, string $content_type): ESignResponse {
         $fileContent = file_get_contents($file_path);
 
         $contentMd5 = ESignUtilHelper::getFileContentMd5($upload_url);
@@ -161,7 +163,9 @@ class ESignHttpHelper {
             $contentMd5 = ESignUtilHelper::getContentMd5($params);
         }
 
-        $signature = ESignUtilHelper::getSignature(self::$appSecret, $method, $content_type, $contentMd5, self::$customHeaders, $uri);
+        $signature = ESignUtilHelper::getSignature(
+            self::$appSecret, $method, $content_type, $contentMd5, self::$customHeaders, $uri
+        );
 
         // 构建基础请求头
         $headers = self::buildCommonHeaders(self::$appId, $contentMd5, $signature, $content_type);

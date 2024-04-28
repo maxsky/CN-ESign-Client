@@ -28,4 +28,9 @@ interface ESignResponseInterface {
      * @return StreamInterface
      */
     public function getBody(): StreamInterface;
+
+    /**
+     * @return array
+     */
+    public function getJson(): array;
 }

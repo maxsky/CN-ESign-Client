@@ -124,7 +124,8 @@ class ESignUtilHelper {
                     }
                 }
 
-                $uri = str_replace('?&', '?', $uri); // use string replace function instead of first or last index judge ;)
+                // use string replace function instead of first or last index judge ;)
+                $uri = str_replace('?&', '?', $uri);
             }
         }
 
