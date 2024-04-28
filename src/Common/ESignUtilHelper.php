@@ -60,7 +60,8 @@ class ESignUtilHelper {
      */
     public static function getSignature(string $app_secret,
                                         string $method,
-                                        string $content_type, string $content_md5, ?array $headers, string $uri): string {
+                                        string $content_type,
+                                        string $content_md5, ?array $headers, string $uri): string {
         $string = "$method\n*/*\n$content_md5\n$content_type\n\n";
 
         $headerStr = self::handleHeaderForSign($headers);
@@ -72,23 +73,6 @@ class ESignUtilHelper {
         $string .= self::handleQueryForSign($uri);
 
         return base64_encode(hash_hmac('sha256', $string, $app_secret, true));
-    }
-
-    /**
-     * 判断是网络路径还是文件路径
-     *
-     * @param string $url
-     *
-     * @return bool
-     */
-    public static function isUrl(string $url): bool {
-        $scheme = parse_url($url, PHP_URL_SCHEME);
-
-        if ($scheme) {
-            return in_array(strtolower($scheme), ['http', 'https']);
-        }
-
-        return false;
     }
 
     /**

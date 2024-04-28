@@ -10,12 +10,13 @@
 namespace MaxSky\ESign\Config;
 
 use MaxSky\ESign\Common\ESignResponse;
+use MaxSky\ESign\Constants\RequestHost;
 
 class ESignConfig {
 
     public $appId;
     public $appSecret;
-    public $host;
+    public $host = RequestHost::ESIGN_HOST_FORMAL; // formal
     public $customHeaders = [];
     public $debug = false;
     public $sandbox = false;
