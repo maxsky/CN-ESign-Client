@@ -94,7 +94,7 @@ class ESignResponse implements ESignResponseInterface {
             $this->message = $json['message'] ?? '未知错误';
 
             if ($this->code) { // success: 0
-                throw new ESignResponseException($this->message, $this->code);
+                throw new ESignResponseException("错误码：{$this->code}，{$this->message}。如需帮助请前往：https://open.esign.cn/tools/error-code 进行查询。", $this->code);
             } else {
                 $this->data = $json['data'];
             }
